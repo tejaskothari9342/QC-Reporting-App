@@ -1,1 +1,1111 @@
-<h1>test</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QualityControl</title>
+<style>
+  :root {
+    --bg: #f5f5f5; --surface: #ffffff; --surface2: #f0edf8;
+    --accent: #7b2d8b; --accent2: #f5f0fb;
+    --orange: #e8680a; --orange2: #fff3e8;
+    --green: #1a8a5a; --yellow: #d4860a; --red: #c0392b;
+    --text: #1a1a2e; --text2: #6b6b8a; --border: #e0d8f0;
+    --radius: 12px; --font: -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; font-size: 15px; -webkit-font-smoothing: antialiased; }
+
+  .nav { background: var(--accent); border-bottom: 1px solid var(--accent); padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-size: 17px; font-weight: 700; color: #fff; }
+  .nav-logo span { color: #ffb347; }
+  .nav-user { font-size: 12px; color: rgba(255,255,255,0.85); text-align: right; }
+  .nav-role { background: rgba(255,255,255,0.2); color: #fff; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; display: inline-block; }
+
+  .tabs { display: flex; background: var(--surface); border-bottom: 2px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: 1; min-width: 70px; padding: 12px 8px; text-align: center; font-size: 11px; font-weight: 600;
+    color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+
+  .main { padding: 20px 24px; max-width: 600px; margin: 0 auto; }
+  .main.wide { max-width: 1400px; padding: 24px 32px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 12px; }
+
+  .btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-success { background: var(--green); color: #fff; }
+  .btn-warning { background: var(--yellow); color: #1a1a2e; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); margin-top: 10px; }
+  .btn-sm { width: auto; padding: 7px 14px; font-size: 12px; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
+  .btn-approve { background: var(--green); color: #fff; }
+  .btn-reject { background: var(--red); color: #fff; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; color: var(--text); font-size: 15px; font-family: var(--font); outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { min-height: 70px; resize: vertical; }
+  select option { background: #ffffff; color: var(--text); }
+
+  .type-toggle { display: flex; gap: 10px; margin-bottom: 16px; }
+  .type-btn { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--surface2); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .type-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent2); }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge-green { background: rgba(26,138,90,0.12); color: var(--green); }
+  .badge-red { background: rgba(192,57,43,0.1); color: var(--red); }
+  .badge-yellow { background: rgba(212,134,10,0.1); color: var(--yellow); }
+  .badge-gray { background: rgba(107,107,138,0.1); color: var(--text2); }
+  .badge-blue { background: rgba(123,45,139,0.1); color: var(--accent); }
+
+  .visit-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .visit-vendor { font-weight: 700; font-size: 15px; }
+  .visit-loc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .visit-meta { font-size: 12px; color: var(--text2); display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+
+  .vendor-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .vendor-name { font-weight: 700; font-size: 16px; }
+  .vendor-meta { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* Location accordion under vendor */
+  .loc-list { margin-top: 10px; }
+  .loc-item { background: var(--accent2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+  .loc-name { font-weight: 700; font-size: 14px; }
+  .loc-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 26px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; text-transform: uppercase; }
+
+  .gps-status { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .gps-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .gps-dot.acquiring { background: var(--yellow); animation: pulse 1.2s infinite; }
+  .gps-dot.ready { background: var(--green); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  .checkin-banner { background: linear-gradient(135deg,rgba(26,138,90,0.08),rgba(26,138,90,0.03));
+    border: 1.5px solid var(--green); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .checkin-banner-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--green); margin-bottom: 6px; }
+  .checkin-vendor { font-size: 18px; font-weight: 800; }
+  .checkin-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+  .job-tag { display: inline-block; background: var(--accent2); color: #74b9ff; font-size: 12px;
+    font-weight: 700; padding: 5px 10px; border-radius: 6px; margin: 3px; cursor: pointer; border: 1.5px solid transparent; transition: all 0.15s; }
+  .job-tag.selected { border-color: var(--accent); color: var(--accent); background: rgba(233,69,96,0.1); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: #fff; border: 2px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.15); padding: 14px 20px;
+    border-radius: var(--radius); font-size: 14px; font-weight: 600; transition: transform 0.3s;
+    z-index: 999; max-width: 320px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.info { border-color: var(--accent); color: var(--accent); }
+
+  .loader { text-align: center; padding: 40px; color: var(--text2); }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--orange);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .empty { text-align: center; padding: 40px 20px; color: var(--text2); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .anomaly-item { border-left: 3px solid var(--red); padding-left: 12px; margin-bottom: 10px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  /* ── VISIT HEATMAP (desktop 1080p) ── */
+  .hm-wrap { width: 100%; }
+  .hm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .hm-title { font-size: 20px; font-weight: 800; color: var(--accent); }
+  .hm-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .hm-filter { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+    padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .hm-filter-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; white-space: nowrap; }
+  .hm-chip { padding: 5px 14px; border: 1.5px solid var(--border); background: #fff; color: var(--text2);
+    font-size: 13px; font-weight: 600; border-radius: 20px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .hm-chip:hover { border-color: var(--green); color: var(--green); }
+  .hm-chip.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .hm-scroll { border: 1px solid var(--border); border-radius: 10px; background: var(--surface); overflow: visible; }
+  .hm-table { border-collapse: collapse; table-layout: fixed; width: 100%; font-size: 13px; }
+  .hm-table th, .hm-table td { border: 1px solid var(--border); text-align: center; }
+  .hm-table thead th { background: #f0faf4; padding: 8px 4px; position: sticky; top: 0; z-index: 1; }
+  .hm-vendor-col { text-align: left !important; padding: 9px 12px; font-weight: 600; color: var(--text);
+    background: var(--surface); position: sticky; left: 0; z-index: 2; width: 220px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+  thead .hm-vendor-col { background: #f0faf4; z-index: 3; font-weight: 700; }
+  .hm-date-col { width: calc((100% - 220px) / 14); }
+  .hm-date { font-size: 12px; font-weight: 700; color: #1a4a2e; }
+  .hm-weekday { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+  .hm-cell { height: 44px; }
+  .hm-dot { width: 22px; height: 22px; border-radius: 50%; background: var(--green); margin: 0 auto;
+    box-shadow: 0 1px 4px rgba(26,138,90,0.35); cursor: default; }
+  .hm-row-gap .hm-vendor-col { color: var(--red); }
+  .hm-novisit { display: inline-block; font-size: 10px; background: rgba(192,57,43,0.08); color: var(--red);
+    padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: 700; text-transform: uppercase; }
+  .hm-row:hover td { background: rgba(26,138,90,0.04); }
+  .hm-sunday { background: rgba(123,45,139,0.05); }
+  .hm-sunday .hm-date { color: var(--accent); }
+  .hm-date-col.hm-sunday { width: calc((100% - 220px) / 18); }
+
+  .login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; }
+  .login-card { max-width:380px; width:100%; background:#fff; border:1px solid var(--border); border-radius:16px; padding:32px 24px; text-align:center; }
+  .login-logo { font-size:22px; font-weight:800; margin-bottom:6px; }
+  .login-logo span { color: var(--orange); }
+  .login-sub { font-size:13px; color:var(--text2); margin-bottom:28px; }
+  .login-error { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); color:var(--red); font-size:13px; padding:12px; border-radius:8px; margin-top:16px; }
+  #google-signin-btn { display:flex; justify-content:center; }
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Quality<span>Control</span></div>
+    <div class="login-sub">Sign in with your registered Google account</div>
+    <div id="google-signin-btn"></div>
+    <div id="login-error-box"></div>
+  </div>
+</div>
+
+<div id="app-root" style="display:none">
+<div class="nav">
+  <div class="nav-logo">Quality<span>Control</span></div>
+  <div class="nav-user" id="nav-user-display"></div>
+</div>
+<div id="tabs-container"></div>
+<div class="main" id="main-content"><div class="loader"><div class="spinner"></div>Loading...</div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const OAUTH_CLIENT_ID = '414957818487-f2tukaneuk2sselov8cu4glvidj58g1j.apps.googleusercontent.com';
+let ROLE = '';
+let USER = '';
+let USER_NAME = '';
+const CONFIG = { selfieEnabled: false };
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxZ2l6H-5SFzYTRvZxbp0XB417SF1rsZcXASsCgQwY4h1CE1rrXMQfUYoVapz1CCwZ-sw/exec';
+let ID_TOKEN = null;
+
+// ══════════════════════════════════════════
+// google.script.run SHIM — translates the existing
+// google.script.run.withSuccessHandler().actionName(args) pattern
+// into fetch() calls against the Apps Script doPost API.
+// This lets all existing UI code work unchanged.
+// ══════════════════════════════════════════
+function gsRunShim(actionName, args) {
+  return new Promise((resolve, reject) => {
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain avoids CORS preflight
+      body: JSON.stringify({
+        action: actionName,
+        idToken: ID_TOKEN,
+        data: buildDataFromArgs(actionName, args),
+      }),
+    })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) resolve(res.data);
+        else reject(new Error(res.error || 'Unknown error'));
+      })
+      .catch(err => reject(err));
+  });
+}
+
+// Maps positional args from the original google.script.run calls
+// into the { data } object the backend router expects.
+function buildDataFromArgs(actionName, args) {
+  switch (actionName) {
+    case 'getActiveCheckIn':
+    case 'getMyDashboard':
+    case 'getAdminDashboard':
+    case 'getAdminDashboardWithLocations':
+    case 'getVisitHeatmap':
+    case 'getUserList':
+      return {}; // email injected server-side from verified token
+    case 'getMyLocations':
+    case 'getAllVendors':
+    case 'getAllLocations':
+      return {};
+    case 'getStylesForVendor':
+    case 'getPendingStylesForVendor':
+    case 'getLocationsForVendor':
+      return { vendorName: args[0] };
+    case 'getProdReportsForVisit':
+      return { visitID: args[0] };
+    case 'approveLocation':
+      return { locationID: args[0], action: args[1] };
+    case 'approveVendor':
+      return { vendorID: args[0], action: args[1] };
+    case 'checkIn':
+    case 'checkOut':
+    case 'submitVendorLocation':
+    case 'submitProdReport':
+    case 'saveVisitDetails':
+    case 'addVendor':
+      return args[0] || {};
+    default:
+      return args[0] || {};
+  }
+}
+
+function makeScriptRun() {
+  const handlerState = { success: null, failure: null };
+  const proxy = {
+    withSuccessHandler(fn) { handlerState.success = fn; return proxy; },
+    withFailureHandler(fn) { handlerState.failure = fn; return proxy; },
+  };
+  const actionNames = [
+    'verifyGoogleIdToken','getMyLocations','getAllVendors','addVendor','approveVendor',
+    'getLocationsForVendor','getAllLocations','submitVendorLocation','approveLocation',
+    'getStylesForVendor','checkIn','checkOut','getPendingStylesForVendor','submitProdReport',
+    'getProdReportsForVisit','getMyDashboard','getAdminDashboard','getAdminDashboardWithLocations',
+    'getActiveCheckIn','getVisitHeatmap','saveVisitDetails','getUserList',
+  ];
+  actionNames.forEach(name => {
+    proxy[name] = function(...args) {
+      gsRunShim(name, args)
+        .then(result => { if (handlerState.success) handlerState.success(result); })
+        .catch(err => { if (handlerState.failure) handlerState.failure(err); });
+      return proxy;
+    };
+  });
+  return proxy;
+}
+
+window.google = window.google || {};
+window.google.script = { run: null }; // run is set dynamically below, fresh proxy each call
+
+Object.defineProperty(window.google.script, 'run', {
+  get() { return makeScriptRun(); }
+});
+
+// ══════════════════════════════════════════
+// GOOGLE SIGN-IN / AUTH
+// ══════════════════════════════════════════
+function initGoogleSignIn() {
+  google.accounts.id.initialize({
+    client_id: OAUTH_CLIENT_ID,
+    callback: handleGoogleSignIn,
+    auto_select: true,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme: 'outline', size: 'large', width: 280 }
+  );
+  google.accounts.id.prompt();
+}
+
+function handleGoogleSignIn(response) {
+  const idToken = response.credential;
+  ID_TOKEN = idToken; // store immediately so the shim can use it
+  document.getElementById('login-error-box').innerHTML = '<div style="margin-top:16px;color:var(--text2);font-size:13px">Verifying...</div>';
+
+  window.google.script.run
+    .withSuccessHandler(res => {
+      if (res.success) {
+        ROLE = res.role;
+        USER = res.email;
+        USER_NAME = res.name;
+        localStorage.setItem('qct_idtoken', idToken);
+        localStorage.setItem('qct_email', res.email);
+        showApp();
+      } else {
+        ID_TOKEN = null;
+        document.getElementById('login-error-box').innerHTML =
+          `<div class="login-error">${res.error}</div>`;
+      }
+    })
+    .withFailureHandler(e => {
+      ID_TOKEN = null;
+      document.getElementById('login-error-box').innerHTML =
+        `<div class="login-error">Error: ${e.message}</div>`;
+    })
+    .verifyGoogleIdToken(idToken);
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+  document.getElementById('nav-user-display').innerHTML =
+    `${USER}<div class="nav-role">${ROLE}</div>`;
+  currentTab = ROLE === 'qc' ? 'checkin' : 'admin';
+  renderTabs();
+  renderPage(currentTab);
+}
+
+function signOut() {
+  localStorage.removeItem('qct_email');
+  location.reload();
+}
+
+// Load Google Identity Services and init once ready
+function waitForGoogleAndInit() {
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    initGoogleSignIn();
+  } else {
+    setTimeout(waitForGoogleAndInit, 200);
+  }
+}
+waitForGoogleAndInit();
+
+let gpsCoords = null, gpsAccuracy = null, gpsWatcher = null;
+let selectedVisitType = 'production';
+let selectedJobNos = [];
+let availableStyles = [];
+let currentActiveSession = null;
+
+function showToast(msg, type='info', dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.className='toast', dur);
+}
+
+function renderLoadError(message, raw) {
+  const main = document.getElementById('main-content');
+  const details = raw ? `<pre style="font-size:10px;color:var(--text2);white-space:pre-wrap;word-break:break-word;background:var(--surface2);padding:10px;border-radius:8px;margin-top:10px;text-align:left">${escapeHtml(JSON.stringify(raw, null, 2))}</pre>` : '';
+  main.innerHTML = `<div class="card"><div class="card-title">Load Error</div><div class="empty">${escapeHtml(message || 'Unknown error')}</div>${details}<button class="btn btn-outline" onclick="renderPage(currentTab)">Retry</button></div>`;
+}
+
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+
+function startGPS() {
+  if (gpsWatcher || !navigator.geolocation) return;
+  gpsWatcher = navigator.geolocation.watchPosition(
+    p => { gpsCoords={lat:p.coords.latitude,lng:p.coords.longitude}; gpsAccuracy=p.coords.accuracy; updateGPSDots(); },
+    e => console.warn('GPS:',e),
+    { enableHighAccuracy:true, maximumAge:10000, timeout:15000 }
+  );
+}
+
+function updateGPSDots() {
+  document.querySelectorAll('.gps-dot').forEach(d => d.className='gps-dot ready');
+  document.querySelectorAll('.gps-label').forEach(l => l.textContent=`GPS ready · ±${Math.round(gpsAccuracy)}m`);
+}
+
+function getDeviceInfo() { return navigator.userAgent.substring(0,100); }
+
+function fmt(dt, style='short') {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleString('en-IN',{dateStyle:'short',timeStyle:style});
+}
+
+// ── TABS
+const TAB_CONFIGS = {
+  qc: [
+    {id:'checkin',icon:'📍',label:'Check In'},
+    {id:'dashboard',icon:'📊',label:'My Week'},
+    {id:'register',icon:'➕',label:'Add Location'},
+  ],
+  admin: [
+    {id:'admin',icon:'🏠',label:'Overview'},
+    {id:'vendors',icon:'🏭',label:'Vendors'},
+    {id:'visits',icon:'📍',label:'Visits'},
+  ],
+  manager: [
+    {id:'admin',icon:'🏠',label:'Overview'},
+    {id:'vendors',icon:'🏭',label:'Vendors'},
+    {id:'visits',icon:'📍',label:'Visits'},
+  ],
+};
+
+let currentTab = 'checkin';
+
+function renderTabs() {
+  const tabs = TAB_CONFIGS[ROLE]||TAB_CONFIGS.qc;
+  document.getElementById('tabs-container').innerHTML = `<div class="tabs">${tabs.map(t=>
+    `<div class="tab ${t.id===currentTab?'active':''}" onclick="switchTab('${t.id}')">
+      <span class="tab-icon">${t.icon}</span>${t.label}
+    </div>`).join('')}</div>`;
+}
+
+function switchTab(tab) {
+  currentTab=tab;
+  renderTabs();
+  const isWide = ['admin','vendors','visits'].includes(tab);
+  document.getElementById('main-content').className = isWide ? 'main wide' : 'main';
+  renderPage(tab);
+}
+
+function renderPage(tab) {
+  document.getElementById('main-content').innerHTML='<div class="loader"><div class="spinner"></div>Loading...</div>';
+  ({checkin:renderCheckinPage,dashboard:renderDashboardPage,register:renderRegisterPage,
+    admin:renderAdminPage,vendors:renderVendorsPage,visits:renderVisitsPage})[tab]?.();
+}
+
+// ══════════════════════════════════════════
+// QC — CHECK IN / ACTIVE SESSION
+// ══════════════════════════════════════════
+function renderCheckinPage() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = `<div class="loader"><div class="spinner"></div>Loading...</div>`;
+  startGPS();
+
+  google.script.run.withSuccessHandler(response => {
+    const active = response ? response.result : null;
+    if (active) {
+      renderActiveSession(active, main);
+    } else {
+      renderNearbyLocations(main);
+    }
+  }).withFailureHandler(e => {
+    main.innerHTML = `<div class="empty">Error: ${e.message}</div><button class="btn btn-outline" onclick="renderCheckinPage()">Retry</button>`;
+  }).getActiveCheckIn(USER);
+}
+
+function renderActiveSession(active, main) {
+  currentActiveSession = active;
+  const isProduction = active.visitType === 'production';
+  main.innerHTML = `
+    <div class="checkin-banner">
+      <div class="checkin-banner-title">✅ Checked In · ${isProduction ? '🏭 Production' : '👋 General'}</div>
+      <div class="checkin-vendor">${active.vendorName}</div>
+      <div class="checkin-sub">📍 ${active.locationName}</div>
+      <div class="checkin-sub" style="margin-top:2px">Since ${fmt(active.checkInTime)}</div>
+      <div id="pending-styles-block"></div>
+      <button class="btn btn-warning" style="margin-top:12px"
+        onclick="showProdReportForm('${active.visitID}','${active.vendorName}')">
+        Update Production Status</button>
+      <div style="margin-top:14px;padding:14px;background:rgba(0,0,0,0.04);border-radius:10px;border:1px solid var(--border)">
+        <div class="field" style="margin-bottom:10px">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Total Machine Operating</label>
+          <input id="visit-machines" type="number" placeholder="No. of machines" style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;color:var(--text);outline:none">
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:5px">Notes</label>
+          <textarea id="visit-notes" placeholder="Any remarks..." style="width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:15px;color:var(--text);outline:none;min-height:70px;resize:vertical;font-family:inherit"></textarea>
+        </div>
+
+      </div>
+      <button class="btn" style="margin-top:12px;background:var(--red);color:#fff;font-size:15px;font-weight:700;padding:14px;width:100%;border:none;border-radius:12px;cursor:pointer"
+        onclick="doCheckOut('${active.locationID}','${active.vendorName}','${active.locationName}')">
+        Check Out from ${active.locationName}
+      </button>
+    </div>`;
+
+  if (isProduction) {
+    google.script.run.withSuccessHandler(pending => {
+      const el = document.getElementById('pending-styles-block');
+      if (!el || !pending.length) return;
+      el.innerHTML = `
+        <div style="margin-top:12px;padding:10px;background:rgba(225,112,85,0.1);border:1px solid rgba(225,112,85,0.3);border-radius:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">⚠ Prod Status Pending This Week</div>
+          ${pending.map(s => `<div style="font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)">${s.jobNo} · ${s.quality}${s.shade ? ' / ' + s.shade : ''}</div>`).join('')}
+        </div>`;
+    }).getPendingStylesForVendor(active.vendorName);
+  }
+}
+
+function renderNearbyLocations(main) {
+  const NEARBY_RADIUS = 100; // meters — show locations within this distance
+
+  main.innerHTML = `
+    <div class="gps-status">
+      <div class="gps-dot ${gpsCoords ? 'ready' : 'acquiring'}"></div>
+      <div class="gps-label">${gpsCoords ? `GPS ready · ±${Math.round(gpsAccuracy)}m` : 'Acquiring GPS location...'}</div>
+    </div>
+    <div id="location-list"><div class="loader"><div class="spinner"></div>Finding nearby locations...</div></div>`;
+
+  // Load all locations from backend, filter by distance client-side
+  google.script.run.withSuccessHandler(locations => {
+    const listEl = document.getElementById('location-list');
+    if (!listEl) return;
+
+    function renderList() {
+      if (!gpsCoords) {
+        setTimeout(renderList, 500);
+        return;
+      }
+      // Calculate distance for each location
+      const withDist = locations.map(loc => ({
+        ...loc,
+        distance: haversineClient(gpsCoords.lat, gpsCoords.lng, loc.lat, loc.lng)
+      })).filter(loc => loc.distance <= NEARBY_RADIUS)
+        .sort((a,b) => a.distance - b.distance);
+
+      if (!withDist.length) {
+        listEl.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon">📍</div>
+            <div>No approved locations within ${NEARBY_RADIUS}m</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px">Move closer to a vendor location to check in</div>
+          </div>
+          <button class="btn btn-outline" style="margin-top:10px" onclick="renderNearbyLocations(document.getElementById('main-content'))">🔄 Refresh</button>`;
+        return;
+      }
+
+      listEl.innerHTML = withDist.map(loc => `
+        <div class="vendor-item">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+              <div class="vendor-name">${loc.vendorName}</div>
+              <div class="visit-loc">${loc.locationName}</div>
+              ${loc.address ? `<div style="font-size:12px;color:var(--text2)">${loc.address}</div>` : ''}
+            </div>
+            <span class="badge badge-green">${Math.round(loc.distance)}m</span>
+          </div>
+          <button class="btn btn-primary" style="margin-top:12px"
+            onclick="showCheckinForm('${loc.locationID}','${loc.vendorName}','${loc.locationName}')">
+            📍 Check In Here
+          </button>
+        </div>`).join('');
+    }
+
+    renderList();
+  }).withFailureHandler(e => {
+    const el = document.getElementById('location-list');
+    if (el) el.innerHTML = `<div class="empty">Error loading locations: ${e.message}</div>`;
+  }).getMyLocations();
+}
+
+// Client-side Haversine (same formula as backend)
+function haversineClient(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1)*Math.PI/180, Δλ = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function showCheckinForm(locationID, vendorName, locationName) {
+  selectedVisitType = 'production';
+  const main = document.getElementById('main-content');
+  main.innerHTML = `
+    <div class="gps-status"><div class="gps-dot ${gpsCoords?'ready':'acquiring'}"></div>
+      <div class="gps-label">${gpsCoords?`GPS ready · ±${Math.round(gpsAccuracy)}m`:'Acquiring GPS...'}</div></div>
+    <div class="card">
+      <div class="card-title">Check In</div>
+      <div class="vendor-name">${vendorName}</div>
+      <div class="visit-loc" style="margin-bottom:16px">📍 ${locationName}</div>
+
+
+      <button class="btn btn-primary" onclick="submitCheckIn('${locationID}','${vendorName}')">📍 Check In</button>
+      <button class="btn btn-outline" onclick="renderCheckinPage()">Back</button>
+    </div>`;
+}
+
+function setVisitType(type) {
+  selectedVisitType = type;
+  document.getElementById('btn-production').className = 'type-btn' + (type==='production'?' active':'');
+  document.getElementById('btn-general').className = 'type-btn' + (type==='general'?' active':'');
+  document.getElementById('general-fields').style.display = type==='general' ? '' : 'none';
+}
+
+function submitCheckIn(locationID, vendorName) {
+  if (!gpsCoords) { showToast('GPS not ready. Please wait.','error'); return; }
+  const data = {
+    locationID, visitType: selectedVisitType,
+    jobNos: '', machine: '',
+    notes: document.getElementById('ci-notes')?.value || '',
+    lat: gpsCoords.lat, lng: gpsCoords.lng,
+    accuracy: gpsAccuracy, deviceInfo: getDeviceInfo(), selfieUrl: '',
+  };
+  showToast('Checking in...','info',5000);
+  google.script.run.withSuccessHandler(res => {
+    if (res.success) {
+      showToast(`✅ Checked in at ${res.locationName} · ${res.distance}m away`,'success',4000);
+      setTimeout(() => renderCheckinPage(), 1500);
+    } else {
+      showToast(res.error,'error',5000);
+    }
+  }).withFailureHandler(e => showToast(e.message,'error')).checkIn(Object.assign({}, data, {clientEmail: USER}));
+}
+
+function saveVisitDetails(visitID) {
+  const machines = document.getElementById('visit-machines').value.trim();
+  const notes = document.getElementById('visit-notes').value.trim();
+  if (!machines && !notes) { showToast('Enter machines or notes to save', 'error'); return; }
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Saving...';
+  google.script.run
+    .withSuccessHandler(res => {
+      btn.disabled = false; btn.textContent = 'Save';
+      if (res.success) showToast('✅ Saved', 'success');
+      else showToast(res.error, 'error');
+    })
+    .withFailureHandler(e => { btn.disabled = false; btn.textContent = 'Save'; showToast(e.message, 'error'); })
+    .saveVisitDetails({ visitID, machines, notes, clientEmail: USER });
+}
+
+function doCheckOut(locationID, vendorName, locationName) {
+  const machines = document.getElementById('visit-machines') ? document.getElementById('visit-machines').value.trim() : '';
+  const notes = document.getElementById('visit-notes') ? document.getElementById('visit-notes').value.trim() : '';
+  google.script.run.withSuccessHandler(res => {
+    if (!res.success) { showToast(res.error,'error'); return; }
+    if (res.checkOutFlag === 'NOT_AT_LOCATION') {
+      showToast(`Checkout done · Not at location`,'error',5000);
+    } else {
+      showToast(`✅ Checked out · ${res.duration} mins`,'success',4000);
+    }
+    setTimeout(() => renderCheckinPage(), 2000);
+  }).withFailureHandler(e => showToast(e.message,'error'))
+  .checkOut({
+    locationID,
+    lat: gpsCoords ? gpsCoords.lat : null,
+    lng: gpsCoords ? gpsCoords.lng : null,
+    machines, notes,
+    clientEmail: USER,
+  });
+}
+
+
+// ══════════════════════════════════════════
+// QC — PRODUCTION STATUS FORM
+// ══════════════════════════════════════════
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function showProdReportForm() {
+  const active = currentActiveSession;
+  const main = document.getElementById('main-content');
+
+  if (!active) {
+    showToast('No active check-in found. Refreshing...','error');
+    renderCheckinPage();
+    return;
+  }
+
+  main.innerHTML = `
+    <div class="card">
+      <div class="card-title">📋 Update Production Status</div>
+      <div class="vendor-name">${escapeHtml(active.vendorName)}</div>
+      <div class="visit-loc" style="margin-bottom:16px">📍 ${escapeHtml(active.locationName)}</div>
+      <div id="prod-form-body"><div class="loader"><div class="spinner"></div>Loading pending jobs...</div></div>
+      <button class="btn btn-outline" onclick="renderCheckinPage()">Back</button>
+    </div>`;
+
+  google.script.run
+    .withSuccessHandler(styles => renderProdReportFormBody(styles || []))
+    .withFailureHandler(e => {
+      const el = document.getElementById('prod-form-body');
+      if (el) el.innerHTML = `<div class="empty">Error loading jobs: ${escapeHtml(e.message)}</div>`;
+    })
+    .getStylesForVendor(active.vendorName);
+}
+
+function renderProdReportFormBody(styles) {
+  availableStyles = styles || [];
+  selectedJobNos = [];
+  const el = document.getElementById('prod-form-body');
+  if (!el) return;
+
+  if (!availableStyles.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✅</div>No pending production styles for this vendor.</div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="field">
+      <label>Select Job / Style</label>
+      <select id="prod-style" onchange="onProdStyleChange()">
+        <option value="">Select job...</option>
+        ${availableStyles.map((s, i) => `<option value="${i}">${escapeHtml(s.jobNo)} · ${escapeHtml(s.quality)}${s.shade ? ' / ' + escapeHtml(s.shade) : ''}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="field"><div id="prod-style-meta" style="font-size:15px;color:var(--text);padding:10px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;min-height:44px"></div></div>
+
+    <div class="grid2">
+      <div class="field"><label>TCR</label><input id="prod-tcr" inputmode="numeric" placeholder="Qty"></div>
+      <div class="field"><label>TOM</label><input id="prod-tom" inputmode="numeric" placeholder="Qty"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>TMO</label><input id="prod-tmo" inputmode="numeric" placeholder="Qty"></div>
+      <div class="field"><label>Dispatch</label><input id="prod-dispatch" inputmode="numeric" placeholder="Qty"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Kaj / Button</label><input id="prod-kajbtn" inputmode="numeric" placeholder="Qty"></div>
+      <div class="field"><label>UF</label><input id="prod-uf" inputmode="numeric" placeholder="Qty"></div>
+    </div>
+    <div class="field"><label>Machine / Line</label><input id="prod-machine" placeholder="Optional"></div>
+    <div class="field"><label>Remarks</label><textarea id="prod-remarks" placeholder="Optional notes"></textarea></div>
+
+    <button class="btn btn-success" id="prod-submit-btn" onclick="submitProdStatus()">✅ Submit Production Status</button>`;
+}
+
+function onProdStyleChange() {
+  const idx = document.getElementById('prod-style').value;
+  const meta = document.getElementById('prod-style-meta');
+  if (!meta || idx === '') { if (meta) meta.innerHTML=''; return; }
+  const s = availableStyles[Number(idx)];
+  meta.innerHTML = `<span>PO Qty: ${escapeHtml(s.poQty || '—')}</span><span style="margin-left:32px">Bal Qty: ${escapeHtml(s.balQty || '—')}</span>${s.jobRecDate ? '<span style="margin-left:32px">Rec: ' + escapeHtml(fmt(s.jobRecDate)) + '</span>' : ''}`;
+}
+
+function submitProdStatus() {
+  const active = currentActiveSession;
+  if (!active) { showToast('No active check-in found.','error'); return; }
+
+  const idx = document.getElementById('prod-style')?.value;
+  if (idx === '' || idx == null) { showToast('Select a job/style first.','error'); return; }
+  const style = availableStyles[Number(idx)];
+  if (!style) { showToast('Invalid style selected.','error'); return; }
+
+  const btn = document.getElementById('prod-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  const payload = {
+    visitID: active.visitID,
+    vendorName: active.vendorName,
+    jobNo: style.jobNo,
+    quality: style.quality,
+    shade: style.shade || '',
+    machine: document.getElementById('prod-machine')?.value || '',
+    tcr: document.getElementById('prod-tcr')?.value || '',
+    tom: document.getElementById('prod-tom')?.value || '',
+    tmo: document.getElementById('prod-tmo')?.value || '',
+    kajBtn: document.getElementById('prod-kajbtn')?.value || '',
+    uf: document.getElementById('prod-uf')?.value || '',
+    dispatch: document.getElementById('prod-dispatch')?.value || '',
+    remarks: document.getElementById('prod-remarks')?.value || '',
+    clientEmail: USER,
+  };
+
+  google.script.run
+    .withSuccessHandler(res => {
+      if (btn) { btn.disabled = false; btn.textContent = '✅ Submit Production Status'; }
+      if (res && res.success) {
+        showToast('✅ Production status submitted','success',4000);
+        setTimeout(() => renderCheckinPage(), 800);
+      } else {
+        showToast((res && res.error) || 'Could not submit production status','error',6000);
+      }
+    })
+    .withFailureHandler(e => {
+      if (btn) { btn.disabled = false; btn.textContent = '✅ Submit Production Status'; }
+      showToast('Error: ' + e.message,'error',6000);
+    })
+    .submitProdReport(payload);
+}
+
+// ══════════════════════════════════════════
+// QC — MY WEEK
+// ══════════════════════════════════════════
+function renderDashboardPage() {
+  const main=document.getElementById('main-content');
+  google.script.run.withSuccessHandler(data=>{
+    if (!data) { renderLoadError('Dashboard returned null. Backend probably returned an unsafe value.', data); return; }
+    if (data.error) { renderLoadError(data.error, data); return; }
+    data.visits = data.visits || [];
+    const prod=data.visits.filter(v=>v.visitType==='production').length;
+    const gen=data.visits.filter(v=>v.visitType==='general').length;
+    main.innerHTML=`
+      <div class="stats">
+        <div class="stat"><div class="stat-num">${data.visits.length}</div><div class="stat-label">Total</div></div>
+        <div class="stat"><div class="stat-num">${prod}</div><div class="stat-label">Production</div></div>
+        <div class="stat"><div class="stat-num">${gen}</div><div class="stat-label">General</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">${data.weekStart} – ${data.weekEnd}</div>
+        ${!data.visits.length?'<div class="empty"><div class="empty-icon">📍</div>No visits this week</div>'
+          :data.visits.map(v=>`
+          <div class="visit-item">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <div class="visit-vendor">${v.vendorName}</div>
+                <div class="visit-loc">${v.locationName}</div>
+                <div class="visit-meta">
+                  <span>In: ${fmt(v.checkIn)}</span>
+                  <span>${v.checkOut?fmt(v.checkOut):'<span style="color:var(--green)">Active</span>'}</span>
+                  ${v.duration?`<span>${v.duration}m</span>`:''}
+                </div>
+                ${v.jobNos?`<div style="font-size:12px;color:var(--text2);margin-top:4px">Jobs: ${v.jobNos}</div>`:''}
+              </div>
+              <span class="badge ${v.visitType==='production'?'badge-blue':'badge-gray'}">
+                ${v.visitType==='production'?'🏭':'👋'}
+              </span>
+            </div>
+            ${v.accuracyFlag==='LOW_ACCURACY'?'<div style="color:var(--yellow);font-size:12px;margin-top:6px">⚠ Low GPS accuracy</div>':''}
+          </div>`).join('')}
+      </div>`;
+  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getMyDashboard(USER);
+}
+
+// ══════════════════════════════════════════
+// QC — ADD LOCATION
+// ══════════════════════════════════════════
+function renderRegisterPage() {
+  const main=document.getElementById('main-content');
+  startGPS();
+  main.innerHTML=`
+    <div class="card">
+      <div class="card-title">📍 Register New Location</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">
+        Be <strong>physically at the location</strong> when submitting. Your GPS coordinates are saved permanently. Admin must approve before it appears in your check-in list.
+      </p>
+      <div class="gps-status"><div class="gps-dot acquiring"></div><div class="gps-label">Acquiring GPS...</div></div>
+      <div class="field">
+        <label>Vendor</label>
+        <select id="reg-vendor"><option value="">Loading vendors...</option></select>
+      </div>
+      <div class="field"><label>Location Name</label><input id="reg-locname" placeholder="e.g. Cutting Unit, Finishing Unit, Main Factory"></div>
+      <div class="field"><label>Address (optional)</label><input id="reg-address" placeholder="Street, Area, City"></div>
+      <div id="reg-coords" style="font-size:12px;color:var(--text2);margin-bottom:14px">Waiting for GPS lock...</div>
+      <button class="btn btn-primary" id="reg-form-btn" onclick="submitVendorReg()">📍 Submit My Current Location</button>
+    </div>`;
+
+  // Load vendor list from approved vendors
+  google.script.run.withSuccessHandler(vendors => {
+    const sel = document.getElementById('reg-vendor');
+    if (!sel) return;
+    if (!vendors.length) {
+      sel.innerHTML='<option value="">No vendors open for location registration</option>';
+      return;
+    }
+    sel.innerHTML='<option value="">Select vendor...</option>' +
+      vendors.map(v=>`<option value="${v.name}">${v.name}</option>`).join('');
+  }).withFailureHandler(()=>{
+    const sel=document.getElementById('reg-vendor');
+    if (sel) sel.innerHTML='<option value="">Could not load vendors</option>';
+  }).getAllVendors();
+
+  const iv=setInterval(()=>{
+    const el=document.getElementById('reg-coords');
+    if (!el) { clearInterval(iv); return; }
+    if (gpsCoords) {
+      el.textContent=`📍 ${gpsCoords.lat.toFixed(6)}, ${gpsCoords.lng.toFixed(6)} · ±${Math.round(gpsAccuracy)}m`;
+      el.style.color='var(--green)';
+    }
+  },1000);
+}
+
+function submitVendorReg() {
+  if (!gpsCoords) { showToast('GPS not ready.','error'); return; }
+  const vendorName=document.getElementById('reg-vendor').value.trim();
+  const locationName=document.getElementById('reg-locname').value.trim();
+  if (!vendorName) { showToast('Please select a vendor','error'); return; }
+  if (!locationName) { showToast('Enter location name (e.g. Cutting Unit)','error'); return; }
+  if (!confirm(`Register "${locationName}" for ${vendorName} at your current GPS?\n\nMake sure you are physically at this location.`)) return;
+  const btn = document.querySelector('#reg-form-btn');
+  if (btn) { btn.disabled=true; btn.textContent='Submitting...'; }
+  showToast('Submitting...','info',8000);
+  google.script.run
+    .withSuccessHandler(res=>{
+      if (btn) { btn.disabled=false; btn.textContent='📍 Submit My Current Location'; }
+      if (res.success) {
+        showToast('✅ Submitted for admin approval!','success',5000);
+        document.getElementById('reg-vendor').value='';
+        document.getElementById('reg-locname').value='';
+        document.getElementById('reg-address').value='';
+      } else showToast(res.error,'error',6000);
+    })
+    .withFailureHandler(e=>{
+      if (btn) { btn.disabled=false; btn.textContent='📍 Submit My Current Location'; }
+      showToast('Error: '+e.message,'error',6000);
+    })
+    .submitVendorLocation({
+      vendorName,locationName,
+      address:document.getElementById('reg-address').value,
+      lat:gpsCoords.lat,lng:gpsCoords.lng,
+      clientEmail: USER,
+    });
+}
+
+// ══════════════════════════════════════════
+// ADMIN — OVERVIEW
+// ══════════════════════════════════════════
+function renderAdminPage() {
+  const main=document.getElementById('main-content');
+  google.script.run.withSuccessHandler(data=>{
+    if (!data) { renderLoadError('Admin dashboard returned null. Backend probably returned an unsafe value.', data); return; }
+    if (data.error) { renderLoadError(data.error, data); return; }
+    data.allVisits = data.allVisits || [];
+    data.recentReports = data.recentReports || [];
+    const pending=data.pendingLocations||[], anomalies=data.anomalies||[];
+    main.innerHTML=`
+      <div class="stats">
+        <div class="stat"><div class="stat-num">${data.allVisits.length}</div><div class="stat-label">Visits This Week</div></div>
+        <div class="stat"><div class="stat-num" style="color:${pending.length?'var(--yellow)':'var(--green)'}">${pending.length}</div><div class="stat-label">Pending</div></div>
+        <div class="stat"><div class="stat-num" style="color:${anomalies.length?'var(--red)':'var(--green)'}">${anomalies.length}</div><div class="stat-label">Anomalies</div></div>
+      </div>
+
+      ${pending.length?`<div class="card">
+        <div class="card-title">🔔 Pending Location Approvals</div>
+        ${pending.map(l=>`<div class="vendor-item">
+          <div class="vendor-name">${l.vendorName}</div>
+          <div class="vendor-meta">📍 ${l.locationName}${l.address?' · '+l.address:''}</div>
+          <div class="vendor-meta">Submitted by ${l.submittedBy}</div>
+          <div class="vendor-meta">GPS: ${parseFloat(l.lat).toFixed(5)}, ${parseFloat(l.lng).toFixed(5)}</div>
+          <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+            <button class="btn-sm btn-approve" onclick="approveLocation('${l.locationID}','approve')">✅ Approve</button>
+            <button class="btn-sm btn-reject" onclick="approveLocation('${l.locationID}','reject')">❌ Reject</button>
+            <a href="https://maps.google.com/?q=${l.lat},${l.lng}" target="_blank" style="margin-left:auto">
+              <button class="btn-sm" style="background:var(--accent2);color:var(--text)">🗺 Map</button>
+            </a>
+          </div>
+        </div>`).join('')}
+      </div>`:''}
+
+      ${anomalies.length?`<div class="card">
+        <div class="card-title" style="color:var(--red)">⚠️ Anomalies</div>
+        ${anomalies.map(v=>`<div class="anomaly-item">
+          <div style="font-weight:700">${v.qcName} @ ${v.vendorName} — ${v.locationName}</div>
+          <div class="visit-meta">
+            ${v.duration<5?`<span style="color:var(--red)">Only ${v.duration} mins</span>`:''}
+            ${v.accuracyFlag==='LOW_ACCURACY'?'<span style="color:var(--yellow)">Low GPS</span>':''}
+            <span>${fmt(v.checkIn)}</span>
+          </div>
+        </div>`).join('')}
+      </div>`:''}
+
+      <div class="card">
+        <div class="card-title">Recent Production Reports</div>
+        ${!data.recentReports.length?'<div class="empty">No reports this week</div>'
+          :data.recentReports.map(r=>`<div class="visit-item">
+            <div class="visit-vendor">${r.vendorName} — ${r.jobNo}</div>
+            <div class="visit-meta"><span>TCR:${r.tcr}</span><span>TOM:${r.tom}</span><span>TMO:${r.tmo}</span><span>Dispatch:${r.dispatch}</span></div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">${r.submittedBy} · ${fmt(r.submittedAt)}</div>
+          </div>`).join('')}
+      </div>`;
+  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getAdminDashboard(USER);
+}
+
+function approveLocation(locationID, action) {
+  google.script.run.withSuccessHandler(res=>{
+    if (res.success) { showToast(action==='approve'?'✅ Location approved!':'❌ Location rejected', action==='approve'?'success':'error'); renderAdminPage(); }
+    else showToast(res.error,'error');
+  }).approveLocation(locationID,action,USER);
+}
+
+// ══════════════════════════════════════════
+// ADMIN — VENDORS (with locations)
+// ══════════════════════════════════════════
+function renderVendorsPage() {
+  const main=document.getElementById('main-content');
+  google.script.run.withSuccessHandler(data=>{
+    if (!data) { renderLoadError('Vendors dashboard returned null. Backend probably returned an unsafe value.', data); return; }
+    if (data.error) { renderLoadError(data.error, data); return; }
+    const vendors=data.allVendors||[];
+    const allLocs=data.allLocations||[];
+    main.innerHTML=`<div class="card">
+      <div class="card-title">All Vendors (${vendors.length})</div>
+      ${!vendors.length?'<div class="empty">No vendors yet</div>'
+        :vendors.map(v=>{
+          const locs=allLocs.filter(l=>l.vendorID===v.id);
+          return `<div class="vendor-item">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <div class="vendor-name">${v.name}</div>
+                <div class="vendor-meta">QC: ${v.assignedQC}</div>
+              </div>
+              <span class="badge ${v.status==='Approved'?'badge-green':'badge-yellow'}">${v.status}</span>
+            </div>
+            ${locs.length?`<div class="loc-list">${locs.map(l=>`
+              <div class="loc-item">
+                <div class="loc-name">${l.locationName}</div>
+                <div class="loc-meta">${l.address||''}</div>
+                <span class="badge ${l.status==='Approved'?'badge-green':l.status==='Pending'?'badge-yellow':'badge-red'}" style="margin-top:4px">${l.status}</span>
+              </div>`).join('')}</div>`:'<div class="vendor-meta" style="margin-top:6px">No locations registered</div>'}
+          </div>`;
+        }).join('')}
+    </div>`;
+  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getAdminDashboardWithLocations(USER);
+}
+
+// ══════════════════════════════════════════
+// ADMIN — VISITS
+// ══════════════════════════════════════════
+let heatmapData = null;
+let heatmapQCFilter = 'all';
+
+function renderVisitsPage() {
+  const main=document.getElementById('main-content');
+  main.innerHTML = `<div class="loader"><div class="spinner"></div>Building visit heatmap...</div>`;
+  google.script.run.withSuccessHandler(data=>{
+    if (!data) { renderLoadError('Heatmap returned null.', data); return; }
+    if (data.error) { renderLoadError(data.error, data); return; }
+    heatmapData = data;
+    heatmapQCFilter = 'all';
+    drawHeatmap();
+  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getVisitHeatmap(USER);
+}
+
+function drawHeatmap() {
+  const main = document.getElementById('main-content');
+  const data = heatmapData;
+  if (!data.vendors.length) {
+    main.innerHTML = `<div class="card"><div class="empty"><div class="empty-icon">📊</div>No vendors with pending jobs found.</div></div>`;
+    return;
+  }
+
+  // QC filter buttons
+  const qcButtons = `
+    <div class="hm-filter">
+      <span class="hm-filter-label">Filter by QC:</span>
+      <button class="hm-chip ${heatmapQCFilter==='all'?'active':''}" onclick="setHeatmapQC('all')">All QCs</button>
+      ${data.qcList.map(qc=>`<button class="hm-chip ${heatmapQCFilter===qc?'active':''}" onclick="setHeatmapQC('${qc.replace(/'/g,"\\'")}')">${qc}</button>`).join('')}
+    </div>`;
+
+  // Build table
+  let header = '<th class="hm-vendor-col">Vendor</th>';
+  data.days.forEach(d => {
+    const isSunday = d.weekday === 'Sun';
+    header += `<th class="hm-date-col ${isSunday?'hm-sunday':''}"><div class="hm-date">${d.label}</div><div class="hm-weekday">${d.weekday}</div></th>`;
+  });
+
+  let rows = '';
+  data.vendors.forEach(vendor => {
+    let rowVisits = 0;
+    let cells = '';
+    data.days.forEach(d => {
+      const mapKey = vendor.toLowerCase() + '||' + d.key;
+      const qcs = data.visitMap[mapKey] || [];
+      let visited = false;
+      if (qcs.length) {
+        if (heatmapQCFilter === 'all') visited = true;
+        else visited = qcs.indexOf(heatmapQCFilter) !== -1;
+      }
+      if (visited) rowVisits++;
+      const title = visited ? `${vendor} · ${d.label} · ${qcs.join(', ')}` : '';
+      const isSunday2 = d.weekday === 'Sun';
+      cells += `<td class="hm-cell ${isSunday2?'hm-sunday':''}">${visited?`<div class="hm-dot" title="${title}"></div>`:''}</td>`;
+    });
+    const gapClass = rowVisits === 0 ? 'hm-row-gap' : '';
+    const vendorDisplay = vendor.replace(/\s*\(Job\)/gi, '').trim();
+    rows += `<tr class="hm-row ${gapClass}"><td class="hm-vendor-col">${vendorDisplay}</td>${cells}</tr>`;
+  });
+
+  main.innerHTML = `
+    <div class="hm-wrap">
+      <div class="hm-head">
+        <div>
+          <div class="hm-title">Visit Heatmap — Last 14 Days</div>
+          <div class="hm-sub">${data.vendors.length} vendors with pending jobs · 🟣 = visited</div>
+        </div>
+      </div>
+      ${qcButtons}
+      <div class="hm-scroll">
+        <table class="hm-table">
+          <thead><tr>${header}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function setHeatmapQC(qc) {
+  heatmapQCFilter = qc;
+  drawHeatmap();
+}
+
+// App initializes only after successful Google sign-in via showApp()
+</script>
+</body>
+</html>
