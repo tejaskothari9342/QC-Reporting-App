@@ -436,6 +436,8 @@ function renderTabs() {
     </div>`).join('')}</div>`;
 }
 
+let renderGeneration = 0;
+
 function switchTab(tab) {
   currentTab=tab;
   renderTabs();
@@ -445,6 +447,7 @@ function switchTab(tab) {
 }
 
 function renderPage(tab) {
+  renderGeneration++; // invalidate any in-flight requests from the previous tab
   document.getElementById('main-content').innerHTML='<div class="loader"><div class="spinner"></div>Loading...</div>';
   ({checkin:renderCheckinPage,dashboard:renderDashboardPage,register:renderRegisterPage,
     admin:renderAdminPage,vendors:renderVendorsPage,visits:renderVisitsPage})[tab]?.();
@@ -458,11 +461,13 @@ let cachedLocationsAt = 0;
 const LOCATIONS_CACHE_MS = 5 * 60 * 1000; // 5 minutes
 
 function renderCheckinPage() {
+  const myGen = renderGeneration;
   const main = document.getElementById('main-content');
   main.innerHTML = `<div class="loader"><div class="spinner"></div>Loading...</div>`;
   startGPS();
 
   google.script.run.withSuccessHandler(response => {
+    if (myGen !== renderGeneration) return; // user switched tabs before this resolved
     const active = response ? response.result : null;
     if (active) {
       renderActiveSession(active, main);
@@ -470,6 +475,7 @@ function renderCheckinPage() {
       renderNearbyLocations(main);
     }
   }).withFailureHandler(e => {
+    if (myGen !== renderGeneration) return;
     main.innerHTML = `<div class="empty">Error: ${e.message}</div><button class="btn btn-outline" onclick="renderCheckinPage()">Retry</button>`;
   }).getActiveCheckIn(USER);
 }
@@ -814,8 +820,10 @@ function submitProdStatus() {
 // QC — MY WEEK
 // ══════════════════════════════════════════
 function renderDashboardPage() {
+  const myGen = renderGeneration;
   const main=document.getElementById('main-content');
   google.script.run.withSuccessHandler(data=>{
+    if (myGen !== renderGeneration) return;
     if (!data) { renderLoadError('Dashboard returned null. Backend probably returned an unsafe value.', data); return; }
     if (data.error) { renderLoadError(data.error, data); return; }
     data.visits = data.visits || [];
@@ -850,13 +858,14 @@ function renderDashboardPage() {
             ${v.accuracyFlag==='LOW_ACCURACY'?'<div style="color:var(--yellow);font-size:12px;margin-top:6px">⚠ Low GPS accuracy</div>':''}
           </div>`).join('')}
       </div>`;
-  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getMyDashboard(USER);
+  }).withFailureHandler(e=>{ if (myGen === renderGeneration) renderLoadError(e.message || String(e)); }).getMyDashboard(USER);
 }
 
 // ══════════════════════════════════════════
 // QC — ADD LOCATION
 // ══════════════════════════════════════════
 function renderRegisterPage() {
+  const myGen = renderGeneration;
   const main=document.getElementById('main-content');
   startGPS();
   main.innerHTML=`
@@ -878,6 +887,7 @@ function renderRegisterPage() {
 
   // Load vendor list from approved vendors
   google.script.run.withSuccessHandler(vendors => {
+    if (myGen !== renderGeneration) return;
     const sel = document.getElementById('reg-vendor');
     if (!sel) return;
     if (!vendors.length) {
@@ -887,11 +897,13 @@ function renderRegisterPage() {
     sel.innerHTML='<option value="">Select vendor...</option>' +
       vendors.map(v=>`<option value="${v.name}">${v.name}</option>`).join('');
   }).withFailureHandler(()=>{
+    if (myGen !== renderGeneration) return;
     const sel=document.getElementById('reg-vendor');
     if (sel) sel.innerHTML='<option value="">Could not load vendors</option>';
   }).getAllVendors();
 
   const iv=setInterval(()=>{
+    if (myGen !== renderGeneration) { clearInterval(iv); return; }
     const el=document.getElementById('reg-coords');
     if (!el) { clearInterval(iv); return; }
     if (gpsCoords) {
@@ -937,8 +949,10 @@ function submitVendorReg() {
 // ADMIN — OVERVIEW
 // ══════════════════════════════════════════
 function renderAdminPage() {
+  const myGen = renderGeneration;
   const main=document.getElementById('main-content');
   google.script.run.withSuccessHandler(data=>{
+    if (myGen !== renderGeneration) return;
     if (!data) { renderLoadError('Admin dashboard returned null. Backend probably returned an unsafe value.', data); return; }
     if (data.error) { renderLoadError(data.error, data); return; }
     data.allVisits = data.allVisits || [];
@@ -989,7 +1003,7 @@ function renderAdminPage() {
             <div style="font-size:11px;color:var(--text2);margin-top:4px">${r.submittedBy} · ${fmt(r.submittedAt)}</div>
           </div>`).join('')}
       </div>`;
-  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getAdminDashboard(USER);
+  }).withFailureHandler(e=>{ if (myGen === renderGeneration) renderLoadError(e.message || String(e)); }).getAdminDashboard(USER);
 }
 
 function approveLocation(locationID, action) {
@@ -1003,8 +1017,10 @@ function approveLocation(locationID, action) {
 // ADMIN — VENDORS (with locations)
 // ══════════════════════════════════════════
 function renderVendorsPage() {
+  const myGen = renderGeneration;
   const main=document.getElementById('main-content');
   google.script.run.withSuccessHandler(data=>{
+    if (myGen !== renderGeneration) return;
     if (!data) { renderLoadError('Vendors dashboard returned null. Backend probably returned an unsafe value.', data); return; }
     if (data.error) { renderLoadError(data.error, data); return; }
     const vendors=data.allVendors||[];
@@ -1031,7 +1047,7 @@ function renderVendorsPage() {
           </div>`;
         }).join('')}
     </div>`;
-  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getAdminDashboardWithLocations(USER);
+  }).withFailureHandler(e=>{ if (myGen === renderGeneration) renderLoadError(e.message || String(e)); }).getAdminDashboardWithLocations(USER);
 }
 
 // ══════════════════════════════════════════
@@ -1041,15 +1057,17 @@ let heatmapData = null;
 let heatmapQCFilter = 'all';
 
 function renderVisitsPage() {
+  const myGen = renderGeneration;
   const main=document.getElementById('main-content');
   main.innerHTML = `<div class="loader"><div class="spinner"></div>Building visit heatmap...</div>`;
   google.script.run.withSuccessHandler(data=>{
+    if (myGen !== renderGeneration) return;
     if (!data) { renderLoadError('Heatmap returned null.', data); return; }
     if (data.error) { renderLoadError(data.error, data); return; }
     heatmapData = data;
     heatmapQCFilter = 'all';
     drawHeatmap();
-  }).withFailureHandler(e=>renderLoadError(e.message || String(e))).getVisitHeatmap(USER);
+  }).withFailureHandler(e=>{ if (myGen === renderGeneration) renderLoadError(e.message || String(e)); }).getVisitHeatmap(USER);
 }
 
 function drawHeatmap() {
