@@ -470,9 +470,9 @@ function renderCheckinPage() {
     if (myGen !== renderGeneration) return; // user switched tabs before this resolved
     const active = response ? response.result : null;
     if (active) {
-      renderActiveSession(active, main);
+      renderActiveSession(active, main, myGen);
     } else {
-      renderNearbyLocations(main);
+      renderNearbyLocations(main, myGen);
     }
   }).withFailureHandler(e => {
     if (myGen !== renderGeneration) return;
@@ -480,7 +480,8 @@ function renderCheckinPage() {
   }).getActiveCheckIn(USER);
 }
 
-function renderActiveSession(active, main) {
+function renderActiveSession(active, main, myGen) {
+  if (myGen !== renderGeneration) return; // stale — a newer tab switch already happened
   currentActiveSession = active;
   const isProduction = active.visitType === 'production';
   main.innerHTML = `
@@ -512,6 +513,7 @@ function renderActiveSession(active, main) {
 
   if (isProduction) {
     google.script.run.withSuccessHandler(pending => {
+      if (myGen !== renderGeneration) return;
       const el = document.getElementById('pending-styles-block');
       if (!el || !pending.length) return;
       el.innerHTML = `
@@ -523,7 +525,8 @@ function renderActiveSession(active, main) {
   }
 }
 
-function renderNearbyLocations(main) {
+function renderNearbyLocations(main, myGen) {
+  if (myGen !== renderGeneration) return;
   const NEARBY_RADIUS = 100; // meters — show locations within this distance
 
   main.innerHTML = `
@@ -534,10 +537,12 @@ function renderNearbyLocations(main) {
     <div id="location-list"><div class="loader"><div class="spinner"></div>Finding nearby locations...</div></div>`;
 
   function withLocations(locations) {
+    if (myGen !== renderGeneration) return;
     const listEl = document.getElementById('location-list');
     if (!listEl) return;
 
     function renderList() {
+      if (myGen !== renderGeneration) return; // stop the wait loop if tab changed
       if (!gpsCoords) {
         setTimeout(renderList, 500);
         return;
@@ -555,7 +560,7 @@ function renderNearbyLocations(main) {
             <div>No approved locations within ${NEARBY_RADIUS}m</div>
             <div style="font-size:12px;color:var(--text2);margin-top:8px">Move closer to a vendor location to check in</div>
           </div>
-          <button class="btn btn-outline" style="margin-top:10px" onclick="renderNearbyLocations(document.getElementById('main-content'))">🔄 Refresh</button>`;
+          <button class="btn btn-outline" style="margin-top:10px" onclick="renderNearbyLocations(document.getElementById('main-content'), renderGeneration)">🔄 Refresh</button>`;
         return;
       }
 
@@ -587,10 +592,12 @@ function renderNearbyLocations(main) {
   }
 
   google.script.run.withSuccessHandler(locations => {
+    if (myGen !== renderGeneration) return;
     cachedLocations = locations;
     cachedLocationsAt = Date.now();
     withLocations(locations);
   }).withFailureHandler(e => {
+    if (myGen !== renderGeneration) return;
     const el = document.getElementById('location-list');
     if (el) el.innerHTML = `<div class="empty">Error loading locations: ${e.message}</div>`;
   }).getMyLocations();
