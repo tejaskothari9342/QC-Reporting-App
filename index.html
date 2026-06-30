@@ -453,6 +453,10 @@ function renderPage(tab) {
 // ══════════════════════════════════════════
 // QC — CHECK IN / ACTIVE SESSION
 // ══════════════════════════════════════════
+let cachedLocations = null;
+let cachedLocationsAt = 0;
+const LOCATIONS_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+
 function renderCheckinPage() {
   const main = document.getElementById('main-content');
   main.innerHTML = `<div class="loader"><div class="spinner"></div>Loading...</div>`;
@@ -523,8 +527,7 @@ function renderNearbyLocations(main) {
     </div>
     <div id="location-list"><div class="loader"><div class="spinner"></div>Finding nearby locations...</div></div>`;
 
-  // Load all locations from backend, filter by distance client-side
-  google.script.run.withSuccessHandler(locations => {
+  function withLocations(locations) {
     const listEl = document.getElementById('location-list');
     if (!listEl) return;
 
@@ -533,7 +536,6 @@ function renderNearbyLocations(main) {
         setTimeout(renderList, 500);
         return;
       }
-      // Calculate distance for each location
       const withDist = locations.map(loc => ({
         ...loc,
         distance: haversineClient(gpsCoords.lat, gpsCoords.lng, loc.lat, loc.lng)
@@ -569,6 +571,19 @@ function renderNearbyLocations(main) {
     }
 
     renderList();
+  }
+
+  // Use cached locations if fresh (under 5 mins old) — skips the round trip entirely
+  const cacheAge = Date.now() - cachedLocationsAt;
+  if (cachedLocations && cacheAge < LOCATIONS_CACHE_MS) {
+    withLocations(cachedLocations);
+    return;
+  }
+
+  google.script.run.withSuccessHandler(locations => {
+    cachedLocations = locations;
+    cachedLocationsAt = Date.now();
+    withLocations(locations);
   }).withFailureHandler(e => {
     const el = document.getElementById('location-list');
     if (el) el.innerHTML = `<div class="empty">Error loading locations: ${e.message}</div>`;
