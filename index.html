@@ -298,6 +298,39 @@ Object.defineProperty(window.google.script, 'run', {
 // ══════════════════════════════════════════
 // GOOGLE SIGN-IN / AUTH
 // ══════════════════════════════════════════
+const SESSION_DAYS = 15;
+const SESSION_MS = SESSION_DAYS * 24 * 60 * 60 * 1000;
+
+function saveSession(idToken, email, role, name) {
+  localStorage.setItem('qct_session', JSON.stringify({
+    idToken, email, role, name,
+    savedAt: Date.now(),
+  }));
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem('qct_session');
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || !s.email || !s.role || !s.idToken) return null;
+    if (Date.now() - s.savedAt > SESSION_MS) { clearSession(); return null; }
+    return s;
+  } catch (e) { return null; }
+}
+
+function clearSession() {
+  localStorage.removeItem('qct_session');
+}
+
+function restoreSession(s) {
+  ID_TOKEN = s.idToken;
+  USER = s.email;
+  ROLE = s.role;
+  USER_NAME = s.name;
+  showApp();
+}
+
 function initGoogleSignIn() {
   google.accounts.id.initialize({
     client_id: OAUTH_CLIENT_ID,
@@ -313,7 +346,7 @@ function initGoogleSignIn() {
 
 function handleGoogleSignIn(response) {
   const idToken = response.credential;
-  ID_TOKEN = idToken; // store immediately so the shim can use it
+  ID_TOKEN = idToken;
   document.getElementById('login-error-box').innerHTML = '<div style="margin-top:16px;color:var(--text2);font-size:13px">Verifying...</div>';
 
   window.google.script.run
@@ -322,8 +355,7 @@ function handleGoogleSignIn(response) {
         ROLE = res.role;
         USER = res.email;
         USER_NAME = res.name;
-        localStorage.setItem('qct_idtoken', idToken);
-        localStorage.setItem('qct_email', res.email);
+        saveSession(idToken, res.email, res.role, res.name);
         showApp();
       } else {
         ID_TOKEN = null;
@@ -350,12 +382,19 @@ function showApp() {
 }
 
 function signOut() {
-  localStorage.removeItem('qct_email');
+  clearSession();
   location.reload();
 }
 
-// Load Google Identity Services and init once ready
+// On page load: check localStorage first, show login only if no valid session
 function waitForGoogleAndInit() {
+  const existing = loadSession();
+  if (existing) {
+    // Valid saved session — restore instantly, no login screen needed
+    restoreSession(existing);
+    return;
+  }
+  // No session — wait for Google Identity Services to load, then show login
   if (window.google && window.google.accounts && window.google.accounts.id) {
     initGoogleSignIn();
   } else {
