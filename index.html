@@ -300,28 +300,25 @@ Object.defineProperty(window.google.script, 'run', {
 // GOOGLE SIGN-IN / AUTH
 // ══════════════════════════════════════════
 const SESSION_DAYS = 15;
-const SESSION_MS = SESSION_DAYS * 24 * 60 * 60 * 1000;
 
 function saveSession(idToken, email, role, name) {
-  localStorage.setItem('qct_session', JSON.stringify({
-    idToken, email, role, name,
-    savedAt: Date.now(),
-  }));
+  const data = JSON.stringify({ idToken, email, role, name });
+  const expires = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `qct_session=${encodeURIComponent(data)}; expires=${expires}; path=/; SameSite=Strict`;
 }
 
 function loadSession() {
   try {
-    const raw = localStorage.getItem('qct_session');
-    if (!raw) return null;
-    const s = JSON.parse(raw);
+    const match = document.cookie.split('; ').find(r => r.startsWith('qct_session='));
+    if (!match) return null;
+    const s = JSON.parse(decodeURIComponent(match.split('=').slice(1).join('=')));
     if (!s || !s.email || !s.role || !s.idToken) return null;
-    if (Date.now() - s.savedAt > SESSION_MS) { clearSession(); return null; }
     return s;
   } catch (e) { return null; }
 }
 
 function clearSession() {
-  localStorage.removeItem('qct_session');
+  document.cookie = 'qct_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 }
 
 function restoreSession(s) {
