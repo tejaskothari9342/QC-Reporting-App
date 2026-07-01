@@ -391,18 +391,16 @@ function signOut() {
 function waitForGoogleAndInit() {
   const existing = loadSession();
   if (existing) {
-    // Valid saved session — restore instantly, no login screen needed
     restoreSession(existing);
     return;
   }
-  // No session — wait for Google Identity Services to load, then show login
   if (window.google && window.google.accounts && window.google.accounts.id) {
     initGoogleSignIn();
   } else {
     setTimeout(waitForGoogleAndInit, 200);
   }
 }
-waitForGoogleAndInit();
+document.addEventListener('DOMContentLoaded', waitForGoogleAndInit);
 
 let gpsCoords = null, gpsAccuracy = null, gpsWatcher = null;
 let selectedVisitType = 'production';
