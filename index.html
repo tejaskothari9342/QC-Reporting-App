@@ -209,14 +209,15 @@ let ID_TOKEN = null;
 // ══════════════════════════════════════════
 function gsRunShim(actionName, args) {
   return new Promise((resolve, reject) => {
+    const isLoginCall = actionName === 'verifyGoogleIdToken';
+    const body = isLoginCall
+      ? { action: actionName, idToken: ID_TOKEN, data: {} }
+      : { action: actionName, trustedEmail: USER, data: buildDataFromArgs(actionName, args) };
+
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // text/plain avoids CORS preflight
-      body: JSON.stringify({
-        action: actionName,
-        idToken: ID_TOKEN,
-        data: buildDataFromArgs(actionName, args),
-      }),
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body),
     })
       .then(r => r.json())
       .then(res => {
