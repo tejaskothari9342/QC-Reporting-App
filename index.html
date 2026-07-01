@@ -501,20 +501,30 @@ const LOCATIONS_CACHE_MS = 5 * 60 * 1000; // 5 minutes
 function renderCheckinPage() {
   const myGen = renderGeneration;
   const main = document.getElementById('main-content');
-  main.innerHTML = `<div class="loader"><div class="spinner"></div>Loading...</div>`;
   startGPS();
 
+  // Show shell immediately — don't wait for network
+  main.innerHTML = `
+    <div class="gps-status">
+      <div class="gps-dot ${gpsCoords ? 'ready' : 'acquiring'}"></div>
+      <div class="gps-label">${gpsCoords ? `GPS ready · ±${Math.round(gpsAccuracy)}m` : 'Acquiring GPS...'}</div>
+    </div>
+    <div id="checkin-body"><div class="loader" style="padding:20px"><div class="spinner"></div></div></div>`;
+
   google.script.run.withSuccessHandler(response => {
-    if (myGen !== renderGeneration) return; // user switched tabs before this resolved
+    if (myGen !== renderGeneration) return;
     const active = response ? response.result : null;
+    const body = document.getElementById('checkin-body') || main;
     if (active) {
-      renderActiveSession(active, main, myGen);
+      body.innerHTML = '';
+      renderActiveSession(active, body, myGen);
     } else {
-      renderNearbyLocations(main, myGen);
+      renderNearbyLocations(body, myGen);
     }
   }).withFailureHandler(e => {
     if (myGen !== renderGeneration) return;
-    main.innerHTML = `<div class="empty">Error: ${e.message}</div><button class="btn btn-outline" onclick="renderCheckinPage()">Retry</button>`;
+    const body = document.getElementById('checkin-body') || main;
+    body.innerHTML = `<div class="empty">Error: ${e.message}</div><button class="btn btn-outline" onclick="renderCheckinPage()">Retry</button>`;
   }).getActiveCheckIn(USER);
 }
 
@@ -565,14 +575,9 @@ function renderActiveSession(active, main, myGen) {
 
 function renderNearbyLocations(main, myGen) {
   if (myGen !== renderGeneration) return;
-  const NEARBY_RADIUS = 100; // meters — show locations within this distance
+  const NEARBY_RADIUS = 100;
 
-  main.innerHTML = `
-    <div class="gps-status">
-      <div class="gps-dot ${gpsCoords ? 'ready' : 'acquiring'}"></div>
-      <div class="gps-label">${gpsCoords ? `GPS ready · ±${Math.round(gpsAccuracy)}m` : 'Acquiring GPS location...'}</div>
-    </div>
-    <div id="location-list"><div class="loader"><div class="spinner"></div>Finding nearby locations...</div></div>`;
+  main.innerHTML = `<div id="location-list"><div class="loader" style="padding:16px"><div class="spinner"></div></div></div>`;
 
   function withLocations(locations) {
     if (myGen !== renderGeneration) return;
@@ -651,20 +656,8 @@ function haversineClient(lat1, lng1, lat2, lng2) {
 }
 
 function showCheckinForm(locationID, vendorName, locationName) {
-  selectedVisitType = 'production';
-  const main = document.getElementById('main-content');
-  main.innerHTML = `
-    <div class="gps-status"><div class="gps-dot ${gpsCoords?'ready':'acquiring'}"></div>
-      <div class="gps-label">${gpsCoords?`GPS ready · ±${Math.round(gpsAccuracy)}m`:'Acquiring GPS...'}</div></div>
-    <div class="card">
-      <div class="card-title">Check In</div>
-      <div class="vendor-name">${vendorName}</div>
-      <div class="visit-loc" style="margin-bottom:16px">📍 ${locationName}</div>
-
-
-      <button class="btn btn-primary" onclick="submitCheckIn('${locationID}','${vendorName}')">📍 Check In</button>
-      <button class="btn btn-outline" onclick="renderCheckinPage()">Back</button>
-    </div>`;
+  // No intermediate screen — check in immediately
+  submitCheckIn(locationID, vendorName);
 }
 
 function setVisitType(type) {
